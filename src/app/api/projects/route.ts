@@ -14,7 +14,7 @@ export async function GET() {
   }
 
   const { data, error } = await supabase
-    .from("projects")
+    .from("portfolio_projects")
     .select("*")
     .order("created_at", { ascending: false });
 
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  const { error: deleteError } = await supabase.from("projects").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+  const { error: deleteError } = await supabase.from("portfolio_projects").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
   if (deleteError) {
     console.error("Supabase delete error:", deleteError);
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       live_url: p.liveUrl,
     }));
 
-    const { error: insertError } = await supabase.from("projects").insert(toInsert);
+    const { error: insertError } = await supabase.from("portfolio_projects").insert(toInsert);
 
     if (insertError) {
       console.error("Supabase insert error:", insertError);

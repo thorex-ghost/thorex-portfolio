@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -19,8 +20,15 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-xl font-semibold tracking-tight text-foreground">
-          THOREX
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/logo.jpg"
+            alt="THOREX"
+            width={160}
+            height={44}
+            className="h-11 w-auto object-contain"
+            priority
+          />
         </Link>
 
         <ul className="hidden md:flex items-center gap-8">

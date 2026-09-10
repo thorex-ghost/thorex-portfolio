@@ -1,37 +1,44 @@
 import { NextResponse } from "next/server";
-import { get, put } from "@vercel/blob";
+import { supabase } from "@/lib/supabase";
 import { projects as seedProjects } from "@/data/projects";
 
 export const dynamic = "force-dynamic";
 
-async function streamToText(stream: ReadableStream<Uint8Array>) {
-  const chunks: Uint8Array[] = [];
-  const reader = stream.getReader();
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (value) chunks.push(value);
-  }
-  return Buffer.concat(chunks).toString("utf-8");
-}
+const isSupabaseConfigured = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export async function GET() {
-  const result = await get("projects.json", {
-    access: "public",
-  });
-
-  if (result && result.stream) {
-    const text = await streamToText(result.stream);
-    return NextResponse.json(JSON.parse(text));
+  if (!isSupabaseConfigured) {
+    return NextResponse.json(seedProjects);
   }
 
-  await put("projects.json", JSON.stringify(seedProjects, null, 2), {
-    access: "public",
-    contentType: "application/json",
-    allowOverwrite: true,
-  });
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-  return NextResponse.json(seedProjects);
+  if (error) {
+    console.error("Supabase error:", error);
+    return NextResponse.json({ error: "Failed to fetch projects" }, { status: 500 });
+  }
+
+  if (!data || data.length === 0) {
+    return NextResponse.json(seedProjects);
+  }
+
+  const formatted = data.map((p) => ({
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    coverImage: p.cover_image,
+    metric: p.metric,
+    description: p.description,
+    techStack: p.tech_stack,
+    liveUrl: p.live_url,
+  }));
+
+  return NextResponse.json(formatted);
 }
 
 export async function POST(request: Request) {
@@ -42,13 +49,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!isSupabaseConfigured) {
+    return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
+  }
+
   const body = await request.json();
 
-  await put("projects.json", JSON.stringify(body, null, 2), {
-    access: "public",
-    contentType: "application/json",
-    allowOverwrite: true,
-  });
+  const { error: deleteError } = await supabase.from("projects").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+  if (deleteError) {
+    console.error("Supabase delete error:", deleteError);
+    return NextResponse.json({ error: "Failed to clear projects" }, { status: 500 });
+  }
+
+  if (body.length > 0) {
+    const toInsert = body.map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      category: p.category,
+      cover_image: p.coverImage,
+      metric: p.metric,
+      description: p.description,
+      tech_stack: p.techStack,
+      live_url: p.liveUrl,
+    }));
+
+    const { error: insertError } = await supabase.from("projects").insert(toInsert);
+
+    if (insertError) {
+      console.error("Supabase insert error:", insertError);
+      return NextResponse.json({ error: "Failed to insert projects" }, { status: 500 });
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

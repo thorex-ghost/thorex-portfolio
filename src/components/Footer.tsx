@@ -1,12 +1,23 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="border-t border-white/5 bg-background">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-12 md:grid-cols-3">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-foreground">
-              THOREX
-            </h3>
+            <Link href="/" className="inline-flex items-center">
+              <Image
+                src="/logo.jpg"
+                alt="THOREX"
+                width={120}
+                height={32}
+                className="h-8 w-auto object-contain"
+              />
+            </Link>
             <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
               Building premium digital experiences across commerce, brand, and
               automation.

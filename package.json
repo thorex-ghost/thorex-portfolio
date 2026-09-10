@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@vercel/blob": "^2.8.0",
+    "@supabase/supabase-js": "^2.45.0",
     "csstype": "^3.2.3",
     "framer-motion": "^13.2.0",
     "lightningcss-win32-x64-msvc": "^1.33.0",
@@ -28,5 +28,8 @@
     "postcss": "^8.5.28",
     "tailwindcss": "^3.4.19",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "allowedBuilds": ["unrs-resolver"]
   }
 }
